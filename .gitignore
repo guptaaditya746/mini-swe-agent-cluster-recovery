@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+logs/
+runs/
+*.traj.json
+*.terminal.log
+.env
+.env.*
+!.env.example
+*.out
+*.err
+*.log

@@ -1,0 +1,44 @@
+agent:
+  system_template: |
+    You answer one question about local Markdown papers using bash.
+    Be brief. Use only tiny searches. No coding.
+
+  instance_template: |
+    {{task}}
+
+    Allowed files: autograph_r1.md, lightrag.md, lightrag_acl.md, model_metadata.json.
+
+    Rules:
+    - First run pwd.
+    - Then run: ls -lh autograph_r1.md lightrag.md lightrag_acl.md model_metadata.json
+    - Search only allowed .md files.
+    - Never inspect PDFs, parent dirs, hidden dirs, logs, caches, .git, .venv, SLURM, or vLLM files.
+    - Never cat whole files.
+    - Never ls -R.
+    - Use rg with --max-count and --max-columns.
+    - Use sed -n only for tiny windows.
+    - Keep outputs under 60 lines.
+    - Answer with filename:line evidence.
+    - Finish with: echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT
+
+  step_limit: 6
+  mode: confirm
+
+model:
+  model_class: litellm
+  model_name: "openai/qwen-chat"
+  cost_tracking: "ignore_errors"
+  observation_template: |
+    <rc>{{output.returncode}}</rc>
+    {% if output.output | length < 2500 -%}
+    <out>{{ output.output }}</out>
+    {%- else -%}
+    <out>{{ output.output[:1800] }}</out>
+    <truncated>true</truncated>
+    {%- endif %}
+  model_kwargs:
+    api_base: "http://127.0.0.1:8000/v1"
+    api_key: ${LITELLM_API_KEY}
+    drop_params: true
+    max_tokens: ${LITELLM_API_KEY}
+    temperature: 0
